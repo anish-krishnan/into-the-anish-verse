@@ -5,8 +5,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/*": [
       "./public/fonts/**/*",
-      "./public/anish-sample.jpg",
-      "./public/partiful-cover.png",
+      "./public/assets/**/*",
     ],
   },
 };

@@ -22,11 +22,11 @@ function loadReferenceImages(): {
   coverBase64: string;
 } {
   if (!_sampleBase64) {
-    const samplePath = path.join(process.cwd(), "public", "anish-sample.jpg");
+    const samplePath = path.join(process.cwd(), "public", "assets", "anish-sample.jpg");
     _sampleBase64 = fs.readFileSync(samplePath).toString("base64");
   }
   if (!_coverBase64) {
-    const coverPath = path.join(process.cwd(), "public", "partiful-cover.png");
+    const coverPath = path.join(process.cwd(), "public", "assets", "partiful-cover.png");
     _coverBase64 = fs.readFileSync(coverPath).toString("base64");
   }
   return { sampleBase64: _sampleBase64, coverBase64: _coverBase64 };

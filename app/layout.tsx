@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Into the Anish-Verse | Trading Card Generator",
     description: "Create your own Anish trading card!",
-    images: ["/partiful-cover.png"],
+    images: ["/assets/partiful-cover.png"],
   },
 };
 

@@ -86,7 +86,7 @@ export default function LandingHero({ onStart }: LandingHeroProps) {
         >
           <div className="relative rounded-lg overflow-hidden shadow-[0_0_30px_rgba(0,240,255,0.2)]">
             <Image
-              src="/partiful-cover.png"
+              src="/assets/partiful-cover.png"
               alt="Select Your Anish — character select screen"
               width={600}
               height={600}
