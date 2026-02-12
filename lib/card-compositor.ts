@@ -12,9 +12,32 @@ const CARD_H = 1434; // 5:7 aspect ratio
 const IMAGE_H = 1178; // 1:1.15 ratio image area
 const PANEL_H = CARD_H - IMAGE_H; // 256px bottom panel
 const BORDER_INSET = 16;
-const CYAN = "#00f0ff";
 const NAVY = "#0a0a1a";
 const FONT_NAME = "Press Start 2P";
+
+const GLOW_COLORS = [
+  "#00f0ff", // cyan
+  "#ff00aa", // pink
+  "#00ff88", // green
+  "#ff8800", // orange
+  "#bf5fff", // purple
+  "#ffd700", // gold
+];
+
+function pickGlowColor(): string {
+  return GLOW_COLORS[Math.floor(Math.random() * GLOW_COLORS.length)];
+}
+
+// Derive a dimmed version for the pipe separator
+function dimColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const dr = Math.round(r * 0.45);
+  const dg = Math.round(g * 0.45);
+  const db = Math.round(b * 0.45);
+  return `#${dr.toString(16).padStart(2, "0")}${dg.toString(16).padStart(2, "0")}${db.toString(16).padStart(2, "0")}`;
+}
 
 function escapeXml(str: string): string {
   return str
@@ -63,19 +86,19 @@ async function createNeonBorder(
     .toBuffer();
 }
 
-async function createGlowingDivider(width: number): Promise<{ image: Buffer; height: number }> {
+async function createGlowingDivider(width: number, color: string): Promise<{ image: Buffer; height: number }> {
   const divH = 60; // total height for line + glow
   const lineY = Math.round(divH / 2);
 
   // Crisp line
   const lineSvg = `<svg width="${width}" height="${divH}" xmlns="http://www.w3.org/2000/svg">
-    <line x1="${BORDER_INSET + 10}" y1="${lineY}" x2="${width - BORDER_INSET - 10}" y2="${lineY}" stroke="${CYAN}" stroke-width="6" opacity="0.9"/>
+    <line x1="${BORDER_INSET + 10}" y1="${lineY}" x2="${width - BORDER_INSET - 10}" y2="${lineY}" stroke="${color}" stroke-width="6" opacity="0.9"/>
   </svg>`;
   const lineBuffer = await sharp(Buffer.from(lineSvg)).png().toBuffer();
 
   // Glow version
   const glowSvg = `<svg width="${width}" height="${divH}" xmlns="http://www.w3.org/2000/svg">
-    <line x1="${BORDER_INSET + 10}" y1="${lineY}" x2="${width - BORDER_INSET - 10}" y2="${lineY}" stroke="${CYAN}" stroke-width="18" opacity="0.4"/>
+    <line x1="${BORDER_INSET + 10}" y1="${lineY}" x2="${width - BORDER_INSET - 10}" y2="${lineY}" stroke="${color}" stroke-width="18" opacity="0.4"/>
   </svg>`;
   const glowBuffer = await sharp(Buffer.from(glowSvg))
     .blur(10)
@@ -100,7 +123,7 @@ async function createGlowingDivider(width: number): Promise<{ image: Buffer; hei
   return { image: composited, height: divH };
 }
 
-async function renderTitle(title: string): Promise<{ image: Buffer; width: number; height: number }> {
+async function renderTitle(title: string, color: string): Promise<{ image: Buffer; width: number; height: number }> {
   const escapedTitle = escapeXml(title.toUpperCase());
 
   // Render the title text in white using Press Start 2P
@@ -134,10 +157,10 @@ async function renderTitle(title: string): Promise<{ image: Buffer; width: numbe
     th = newH;
   }
 
-  // Create cyan glow version
+  // Create colored glow version
   const glowText = await sharp({
     text: {
-      text: `<span foreground="${CYAN}">${escapedTitle}</span>`,
+      text: `<span foreground="${color}">${escapedTitle}</span>`,
       font: FONT_NAME,
       dpi: 400,
       rgba: true,
@@ -190,11 +213,11 @@ async function renderTitle(title: string): Promise<{ image: Buffer; width: numbe
   return { image: composited, width: canvasW, height: canvasH };
 }
 
-async function buildGlowingBlocks(level: number, maxBlocks: number): Promise<{ image: Buffer; width: number; height: number }> {
+async function buildGlowingBlocks(level: number, maxBlocks: number, color: string): Promise<{ image: Buffer; width: number; height: number }> {
   const blockW = 30;
   const blockH = 24;
   const blockGap = 5;
-  const filledColor = CYAN;
+  const filledColor = color;
   const emptyColor = "#444444";
   const svgW = maxBlocks * (blockW + blockGap) - blockGap;
   const svgH = blockH;
@@ -254,10 +277,11 @@ async function renderStatLabel(name: string): Promise<{ image: Buffer; width: nu
   return { image: buf, width: meta.width!, height: meta.height! };
 }
 
-async function renderPipe(): Promise<{ image: Buffer; width: number; height: number }> {
+async function renderPipe(color: string): Promise<{ image: Buffer; width: number; height: number }> {
+  const pipeColor = dimColor(color);
   const buf = await sharp({
     text: {
-      text: `<span foreground="#00a0aa">|</span>`,
+      text: `<span foreground="${pipeColor}">|</span>`,
       font: FONT_NAME,
       dpi: 135,
       rgba: true,
@@ -273,7 +297,8 @@ async function buildStatBar(
   stat1Name: string,
   stat1Level: number,
   stat2Name: string,
-  stat2Level: number
+  stat2Level: number,
+  color: string
 ): Promise<{ image: Buffer; width: number; height: number }> {
   const maxBlocks = 6;
   const labelGap = 10;
@@ -283,9 +308,9 @@ async function buildStatBar(
   const [s1Label, s2Label, pipe, blocks1, blocks2] = await Promise.all([
     renderStatLabel(stat1Name),
     renderStatLabel(stat2Name),
-    renderPipe(),
-    buildGlowingBlocks(stat1Level, maxBlocks),
-    buildGlowingBlocks(stat2Level, maxBlocks),
+    renderPipe(color),
+    buildGlowingBlocks(stat1Level, maxBlocks, color),
+    buildGlowingBlocks(stat2Level, maxBlocks, color),
   ]);
 
   // Calculate total width
@@ -345,16 +370,19 @@ export async function compositeCard(
   stat2Name: string,
   stat2Level: number
 ): Promise<Buffer> {
+  // Pick a random glow color for this card
+  const glowColor = pickGlowColor();
+
   // Generate layers in parallel
   const [resizedImage, border, titleResult, divider, statResult] = await Promise.all([
     sharp(rawImageBuffer)
       .resize(CARD_W, IMAGE_H, { fit: "cover" })
       .png()
       .toBuffer(),
-    createNeonBorder(CARD_W, CARD_H, CYAN),
-    renderTitle(title),
-    createGlowingDivider(CARD_W),
-    buildStatBar(stat1Name, stat1Level, stat2Name, stat2Level),
+    createNeonBorder(CARD_W, CARD_H, glowColor),
+    renderTitle(title, glowColor),
+    createGlowingDivider(CARD_W, glowColor),
+    buildStatBar(stat1Name, stat1Level, stat2Name, stat2Level, glowColor),
   ]);
 
   const statW = statResult.width;
