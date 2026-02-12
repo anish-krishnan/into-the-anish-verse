@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0a0a1a;
+  --color-navy-light: #12122a;
+  --color-neon-cyan: #00f0ff;
+  --color-neon-pink: #ff00aa;
+  --color-neon-green: #00ff88;
+  --color-neon-orange: #ff8800;
+  --color-neon-purple: #aa00ff;
+  --color-neon-gold: #ffcc00;
+
+  --font-arcade: "Press Start 2P", monospace;
+  --font-body: "Inter", sans-serif;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-navy);
+  color: white;
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* Neon glow utilities */
+.neon-text-cyan {
+  text-shadow: 0 0 7px var(--color-neon-cyan), 0 0 20px var(--color-neon-cyan),
+    0 0 42px var(--color-neon-cyan);
+}
+
+.neon-text-pink {
+  text-shadow: 0 0 7px var(--color-neon-pink), 0 0 20px var(--color-neon-pink),
+    0 0 42px var(--color-neon-pink);
+}
+
+.neon-text-green {
+  text-shadow: 0 0 7px var(--color-neon-green), 0 0 20px var(--color-neon-green),
+    0 0 42px var(--color-neon-green);
+}
+
+.neon-box-cyan {
+  box-shadow: 0 0 5px var(--color-neon-cyan), 0 0 20px var(--color-neon-cyan),
+    inset 0 0 5px var(--color-neon-cyan);
+}
+
+.neon-box-pink {
+  box-shadow: 0 0 5px var(--color-neon-pink), 0 0 20px var(--color-neon-pink),
+    inset 0 0 5px var(--color-neon-pink);
+}
+
+/* Scanline overlay (subtle) */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.05) 2px,
+    rgba(0, 0, 0, 0.05) 4px
+  );
+  z-index: 10;
+}
+
+/* Custom slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #1a1a3a;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-neon-cyan);
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--color-neon-cyan);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-neon-cyan);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 10px var(--color-neon-cyan);
+}
+
+/* Animated background gradient */
+@keyframes bg-pulse {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-animated {
+  background: radial-gradient(ellipse at 50% 50%, #12122a 0%, #0a0a1a 70%);
+  background-size: 200% 200%;
+  animation: bg-pulse 15s ease infinite;
+}
+
+/* Neon button pulse */
+@keyframes neon-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--color-neon-cyan), 0 0 15px var(--color-neon-cyan);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--color-neon-cyan), 0 0 30px var(--color-neon-cyan),
+      0 0 50px var(--color-neon-cyan);
+  }
+}
+
+/* Loading dots animation */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.loading-dot {
+  animation: blink 1.4s infinite both;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
