@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import AdminGallery from "@/components/AdminGallery";
+import RainingCards from "@/components/RainingCards";
 
 interface CardWithUrls {
   id: string;
@@ -17,7 +17,7 @@ interface CardWithUrls {
   created_at: string;
 }
 
-function AdminContent() {
+function GalleryContent() {
   const searchParams = useSearchParams();
   const key = searchParams.get("key");
 
@@ -56,7 +56,7 @@ function AdminContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-screen w-screen flex items-center justify-center bg-navy">
         <p className="font-arcade text-sm text-neon-cyan animate-pulse">
           LOADING...
         </p>
@@ -66,8 +66,8 @@ function AdminContent() {
 
   if (error === "unauthorized") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-arcade text-sm text-neon-pink">
+      <div className="h-screen w-screen flex items-center justify-center bg-navy">
+        <p className="font-arcade text-sm text-neon-pink neon-text-pink">
           ACCESS DENIED
         </p>
       </div>
@@ -76,27 +76,38 @@ function AdminContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-screen w-screen flex items-center justify-center bg-navy">
         <p className="text-neon-pink">{error}</p>
       </div>
     );
   }
 
-  return <AdminGallery cards={cards} adminKey={key!} />;
+  // Filter to only cards with images
+  const cardsWithImages = cards.filter((c) => c.compositeImageUrl);
+
+  if (cardsWithImages.length === 0) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-navy">
+        <p className="font-arcade text-sm text-white/30">NO CARDS YET</p>
+      </div>
+    );
+  }
+
+  return <RainingCards cards={cardsWithImages} />;
 }
 
-export default function AdminPage() {
+export default function GalleryPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="h-screen w-screen flex items-center justify-center bg-navy">
           <p className="font-arcade text-sm text-neon-cyan animate-pulse">
             LOADING...
           </p>
         </div>
       }
     >
-      <AdminContent />
+      <GalleryContent />
     </Suspense>
   );
 }

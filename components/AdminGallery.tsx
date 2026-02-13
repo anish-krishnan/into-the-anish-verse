@@ -18,6 +18,7 @@ interface CardWithUrls {
 
 interface AdminGalleryProps {
   cards: CardWithUrls[];
+  adminKey: string;
 }
 
 async function downloadSingleCard(url: string, filename: string) {
@@ -32,9 +33,33 @@ async function downloadSingleCard(url: string, filename: string) {
   URL.revokeObjectURL(a.href);
 }
 
-export default function AdminGallery({ cards }: AdminGalleryProps) {
+export default function AdminGallery({ cards: initialCards, adminKey }: AdminGalleryProps) {
+  const [cards, setCards] = useState<CardWithUrls[]>(initialCards);
   const [selectedCard, setSelectedCard] = useState<CardWithUrls | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(cardId: string, e: React.MouseEvent) {
+    e.stopPropagation(); // Don't open lightbox
+    if (!confirm("Delete this card?")) return;
+
+    setDeletingId(cardId);
+    try {
+      const res = await fetch(
+        `/api/cards/${cardId}?key=${encodeURIComponent(adminKey)}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("Failed to delete");
+
+      setCards((prev) => prev.filter((c) => c.id !== cardId));
+      if (selectedCard?.id === cardId) setSelectedCard(null);
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete card.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   async function handleDownloadAll() {
     setDownloading(true);
@@ -106,9 +131,19 @@ export default function AdminGallery({ cards }: AdminGalleryProps) {
           {cards.map((card) => (
             <div
               key={card.id}
-              className="border border-white/10 rounded-lg overflow-hidden bg-navy-light hover:border-neon-cyan/30 transition-all cursor-pointer group"
+              className="relative border border-white/10 rounded-lg overflow-hidden bg-navy-light hover:border-neon-cyan/30 transition-all cursor-pointer group"
               onClick={() => setSelectedCard(card)}
             >
+              {/* Delete button */}
+              <button
+                onClick={(e) => handleDelete(card.id, e)}
+                disabled={deletingId === card.id}
+                className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/60 border border-neon-pink/40 text-neon-pink text-xs hover:bg-neon-pink/20 hover:border-neon-pink transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                title="Delete card"
+              >
+                {deletingId === card.id ? "…" : "✕"}
+              </button>
+
               {card.compositeImageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

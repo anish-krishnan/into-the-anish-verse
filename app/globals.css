@@ -151,3 +151,27 @@ input[type="range"]::-moz-range-thumb {
 .loading-dot:nth-child(3) {
   animation-delay: 0.4s;
 }
+
+/* Gallery screensaver — falling cards */
+@keyframes cardFall {
+  0% {
+    transform: translateY(-110%) rotate(var(--rotation)) scale(var(--card-scale));
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100vh + 10%)) rotate(var(--rotation)) scale(var(--card-scale));
+    opacity: 0;
+  }
+}
+
+.falling-card {
+  position: absolute;
+  animation: cardFall var(--duration) linear var(--delay) infinite;
+  will-change: transform;
+}

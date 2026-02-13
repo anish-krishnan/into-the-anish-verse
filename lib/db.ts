@@ -68,6 +68,24 @@ export async function updateCardPaths(
   }
 }
 
+export async function deleteCard(id: string): Promise<Card | null> {
+  const supabase = getSupabaseAdmin();
+
+  const { data, error } = await supabase
+    .from("cards")
+    .delete()
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(`Failed to delete card: ${error.message}`);
+  }
+
+  return data as Card;
+}
+
 export async function getCardCount(): Promise<number> {
   const supabase = getSupabaseAdmin();
 

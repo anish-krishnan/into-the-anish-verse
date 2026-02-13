@@ -31,6 +31,16 @@ export function getPublicUrl(path: string): string {
   return publicUrl;
 }
 
+export async function deleteImages(paths: string[]): Promise<void> {
+  const supabase = getSupabaseAdmin();
+
+  const { error } = await supabase.storage.from(BUCKET).remove(paths);
+
+  if (error) {
+    throw new Error(`Failed to delete images: ${error.message}`);
+  }
+}
+
 export async function downloadImage(path: string): Promise<Buffer> {
   const supabase = getSupabaseAdmin();
 

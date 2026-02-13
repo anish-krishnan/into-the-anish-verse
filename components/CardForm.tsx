@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import NeonButton from "./NeonButton";
 import StatBar from "./StatBar";
 import { PRESETS } from "@/lib/presets";
@@ -14,12 +14,11 @@ interface CardFormProps {
 }
 
 const DEFAULT_DATA: CardFormData = {
-  title: "GYM BRO",
-  description:
-    "Tank top, protein shaker in hand, mid-flex, intense gym selfie energy, headband on",
-  stat1Name: "STR",
-  stat1Level: 5,
-  stat2Name: "SPD",
+  title: "",
+  description: "",
+  stat1Name: "",
+  stat1Level: 3,
+  stat2Name: "",
   stat2Level: 3,
 };
 
@@ -32,9 +31,11 @@ export default function CardForm({
     initialData || DEFAULT_DATA
   );
   const [isRandomizing, setIsRandomizing] = useState(false);
+  const [showRandomizeHint, setShowRandomizeHint] = useState(false);
 
   function handleRandomize() {
     setIsRandomizing(true);
+    setShowRandomizeHint(true);
     const preset = PRESETS[Math.floor(Math.random() * PRESETS.length)];
     setFormData(preset);
     setTimeout(() => setIsRandomizing(false), 300);
@@ -67,7 +68,7 @@ export default function CardForm({
         CREATE YOUR CARD
       </motion.h2>
       <p className="font-arcade text-[10px] text-white/40 mb-8 text-center">
-        Fill in the details or hit randomize
+        Describe your version of Anish
       </p>
 
       {error && (
@@ -84,6 +85,19 @@ export default function CardForm({
         onSubmit={handleSubmit}
         className="w-full max-w-[500px] space-y-6"
       >
+        <AnimatePresence>
+          {showRandomizeHint && (
+            <motion.p
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              className="font-arcade text-[10px] text-neon-pink text-center leading-relaxed"
+            >
+              Feel free to tweak the details or come up with your own — the best cards are the creative ones!
+            </motion.p>
+          )}
+        </AnimatePresence>
+
         {/* Card Title */}
         <div>
           <label className="block font-arcade text-[10px] text-neon-cyan mb-2">
@@ -92,13 +106,13 @@ export default function CardForm({
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => updateField("title", e.target.value)}
+            onChange={(e) => { updateField("title", e.target.value); setShowRandomizeHint(false); }}
             maxLength={30}
             placeholder="What's your favorite Anish?"
             required
             className="w-full px-4 py-3 bg-navy-light border border-white/10 rounded text-white font-arcade text-xs placeholder:text-white/20 placeholder:font-arcade placeholder:text-[10px] focus:border-neon-cyan focus:outline-none focus:shadow-[0_0_10px_theme(colors.neon-cyan/30)] transition-all"
           />
-          <p className="text-white/20 text-xs mt-1">
+          <p className="font-arcade text-white/20 text-[10px] mt-1">
             {formData.title.length}/30
           </p>
         </div>
@@ -110,14 +124,14 @@ export default function CardForm({
           </label>
           <textarea
             value={formData.description}
-            onChange={(e) => updateField("description", e.target.value)}
+            onChange={(e) => { updateField("description", e.target.value); setShowRandomizeHint(false); }}
             maxLength={300}
-            rows={3}
-            placeholder="Describe your version of Anish..."
+            rows={4}
+            placeholder={"Describe your version of Anish...\n\ne.g. \"Wearing an apron, holding a wooden spoon, surrounded by spices\""}
             required
             className="w-full px-4 py-3 bg-navy-light border border-white/10 rounded text-white font-arcade text-xs leading-relaxed placeholder:text-white/20 placeholder:font-arcade placeholder:text-[10px] focus:border-neon-cyan focus:outline-none focus:shadow-[0_0_10px_theme(colors.neon-cyan/30)] transition-all resize-none"
           />
-          <p className="text-white/20 text-xs mt-1">
+          <p className="font-arcade text-white/20 text-[10px] mt-1">
             {formData.description.length}/300
           </p>
         </div>
@@ -201,7 +215,7 @@ export default function CardForm({
             whileTap={{ scale: 0.95 }}
             className={`flex-1 font-arcade text-xs px-4 py-4 min-h-[44px] border border-neon-pink/50 text-neon-pink bg-neon-pink/5 hover:bg-neon-pink/10 transition-all cursor-pointer ${isRandomizing ? "animate-pulse" : ""}`}
           >
-            RANDOMIZE
+            HELP ME PICK!
           </motion.button>
           <NeonButton
             type="submit"
@@ -211,6 +225,7 @@ export default function CardForm({
             GENERATE
           </NeonButton>
         </div>
+
       </form>
     </motion.div>
   );
