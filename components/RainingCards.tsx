@@ -151,10 +151,7 @@ export default function RainingCards({ cards }: RainingCardsProps) {
               "--card-scale": card.scale,
               left: `${leftPercent}%`,
               width: `${cardWidth}%`,
-              borderRadius: "8px",
               overflow: "hidden",
-              border: `2px solid ${card.color.border}`,
-              boxShadow: card.color.shadow,
             } as React.CSSProperties}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
