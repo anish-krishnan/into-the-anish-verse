@@ -19,11 +19,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://anish-trading-cards.vercel.app"
   ),
-  title: "Into the Anish-Verse | Trading Card Generator",
+  title: "Into the Anish-Verse",
   description:
     "Create your own Anish trading card! AI-generated character portraits in arcade style.",
   openGraph: {
-    title: "Into the Anish-Verse | Trading Card Generator",
+    title: "Into the Anish-Verse",
     description: "Create your own Anish trading card!",
     images: ["/assets/partiful-cover.png"],
   },
