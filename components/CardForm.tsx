@@ -75,7 +75,7 @@ export default function CardForm({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-[500px] mb-6 p-4 border border-neon-pink/50 bg-neon-pink/10 text-neon-pink text-sm rounded"
+          className="w-full max-w-[500px] mb-6 p-4 border border-neon-pink/50 bg-neon-pink/10 text-neon-pink font-arcade text-[10px] leading-relaxed rounded"
         >
           {error}
         </motion.div>
@@ -106,7 +106,7 @@ export default function CardForm({
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => { updateField("title", e.target.value); setShowRandomizeHint(false); }}
+            onChange={(e) => { updateField("title", e.target.value.toUpperCase()); setShowRandomizeHint(false); }}
             maxLength={30}
             placeholder="What's your favorite Anish?"
             required
