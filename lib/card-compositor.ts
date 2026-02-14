@@ -362,7 +362,7 @@ async function buildStatBar(
   return { image: composited, width: canvasW, height: canvasH };
 }
 
-/** Crop a layer so it fits within the card canvas at the given offset. */
+/** Crop a layer so it fits within the card canvas at the provided offset. */
 async function clipToFit(
   buf: Buffer,
   x: number,
