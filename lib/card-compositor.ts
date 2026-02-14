@@ -362,6 +362,27 @@ async function buildStatBar(
   return { image: composited, width: canvasW, height: canvasH };
 }
 
+/** Crop a layer so it fits within the card canvas at the given offset. */
+async function clipToFit(
+  buf: Buffer,
+  x: number,
+  y: number,
+  layerW: number,
+  layerH: number
+): Promise<Buffer> {
+  const maxW = Math.max(1, CARD_W - x);
+  const maxH = Math.max(1, CARD_H - y);
+  if (layerW <= maxW && layerH <= maxH) return buf;
+  return sharp(buf)
+    .extract({
+      left: 0,
+      top: 0,
+      width: Math.min(layerW, maxW),
+      height: Math.min(layerH, maxH),
+    })
+    .toBuffer();
+}
+
 export async function compositeCard(
   rawImageBuffer: Buffer,
   title: string,
@@ -405,6 +426,13 @@ export async function compositeCard(
   const statY = titleY + titleResult.height + 6;
   const statX = Math.max(0, Math.round((CARD_W - statW) / 2));
 
+  // Clip layers so they don't exceed the card canvas
+  const [clippedDivider, clippedTitle, clippedStat] = await Promise.all([
+    clipToFit(divider.image, 0, dividerY, CARD_W, divider.height),
+    clipToFit(titleResult.image, titleX, titleY, titleResult.width, titleResult.height),
+    clipToFit(statResult.image, statX, statY, statW, statH),
+  ]);
+
   // Create the full card on a dark navy background
   const assembled = await sharp({
     create: {
@@ -418,11 +446,11 @@ export async function compositeCard(
       // Character image at the top
       { input: resizedImage, left: 0, top: 0, blend: "over" },
       // Glowing divider line at the boundary
-      { input: divider.image, left: 0, top: dividerY, blend: "over" },
+      { input: clippedDivider, left: 0, top: dividerY, blend: "over" },
       // Title with glow in the panel
-      { input: titleResult.image, left: titleX, top: titleY, blend: "over" },
+      { input: clippedTitle, left: titleX, top: titleY, blend: "over" },
       // Stat bar in the panel
-      { input: statResult.image, left: statX, top: statY, blend: "over" },
+      { input: clippedStat, left: statX, top: statY, blend: "over" },
       // Neon border on top of everything
       { input: border, left: 0, top: 0, blend: "over" },
     ])
