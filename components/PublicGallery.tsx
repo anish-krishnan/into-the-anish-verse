@@ -37,9 +37,6 @@ export default function PublicGallery({ cards }: PublicGalleryProps) {
         <h1 className="font-arcade text-lg sm:text-2xl text-neon-cyan neon-text-cyan mb-3">
           ANISH&apos;S TOP PICKS
         </h1>
-        <p className="text-white/40 text-sm font-arcade">
-          {cardsWithImages.length} CARD{cardsWithImages.length !== 1 ? "S" : ""} CREATED
-        </p>
       </div>
 
       {/* Grid */}
