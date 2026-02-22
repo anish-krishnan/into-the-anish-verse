@@ -22,23 +22,25 @@ const NEON_COLORS = [
 ];
 
 const NUM_COLUMNS = 5;
-const MAX_PER_COLUMN = 2;
 const MIN_CARDS = 100;
+const CARD_GAP_VH = 30; // vertical gap between cards in vh units
+const SECONDS_PER_CARD = 3; // how many seconds each card takes to scroll past
 
-interface FallingCardData {
+interface ColumnCardData {
   key: string;
   url: string;
   title: string;
-  column: number;
-  duration: number;
-  delay: number;
   rotation: number;
-  scale: number;
   color: typeof NEON_COLORS[number];
 }
 
-function generateFallingCards(cards: CardWithUrls[]): FallingCardData[] {
-  // Duplicate cards if needed to fill the screen
+interface ColumnData {
+  cards: ColumnCardData[];
+  duration: number; // total scroll duration for this column
+}
+
+function generateColumns(cards: CardWithUrls[]): ColumnData[] {
+  // Duplicate cards if needed to fill the display
   let pool = [...cards];
   while (pool.length < MIN_CARDS) {
     pool = [...pool, ...cards];
@@ -56,32 +58,17 @@ function generateFallingCards(cards: CardWithUrls[]): FallingCardData[] {
     columnBuckets[i % NUM_COLUMNS].push(card);
   });
 
-  // Pick a random duration per column, then evenly stagger delays
-  // so cards in the same column never overlap.
-  // Limit to MAX_PER_COLUMN cards per column to guarantee spacing.
-  const result: FallingCardData[] = [];
-  columnBuckets.forEach((colCards, colIdx) => {
-    const limited = colCards;
-    const n = limited.length;
-    const secondsBetweenCards = 4;
-    const duration = secondsBetweenCards * n + Math.random() * 5; // scale with card count
-
-    limited.forEach((card, i) => {
-      result.push({
-        key: `${card.id}-${colIdx}-${i}`,
-        url: card.compositeImageUrl!,
-        title: card.title,
-        column: colIdx,
-        duration,
-        delay: -(i * duration / n), // evenly spaced within the animation cycle
-        rotation: -2 + Math.random() * 4, // ±2 deg (tighter to stay in column)
-        scale: 1,
-        color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
-      });
-    });
-  });
-
-  return result;
+  return columnBuckets.map((colCards, colIdx) => ({
+    cards: colCards.map((card, i) => ({
+      key: `${card.id}-${colIdx}-${i}`,
+      url: card.compositeImageUrl!,
+      title: card.title,
+      rotation: -2 + Math.random() * 4,
+      color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+    })),
+    // Slight speed variation per column so they don't move in lockstep
+    duration: SECONDS_PER_CARD * colCards.length + Math.random() * 10,
+  }));
 }
 
 function preloadImages(urls: string[]): Promise<void> {
@@ -108,7 +95,7 @@ function preloadImages(urls: string[]): Promise<void> {
 export default function RainingCards({ cards }: RainingCardsProps) {
   const [ready, setReady] = useState(false);
 
-  const fallingCards = useMemo(() => generateFallingCards(cards), [cards]);
+  const columns = useMemo(() => generateColumns(cards), [cards]);
 
   useEffect(() => {
     const urls = cards
@@ -127,44 +114,64 @@ export default function RainingCards({ cards }: RainingCardsProps) {
     );
   }
 
-  // Group cards by column
-  const columns: FallingCardData[][] = Array.from({ length: NUM_COLUMNS }, () => []);
-  for (const card of fallingCards) {
-    columns[card.column].push(card);
-  }
-
   return (
     <div className="h-screen w-screen overflow-hidden bg-animated relative">
-      {columns.map((colCards, colIdx) => {
-        // Each column: center the card within the column slot
+      {columns.map((col, colIdx) => {
         const colWidth = 100 / NUM_COLUMNS;
-        const cardWidth = colWidth - 2; // 2% gap
+        const cardWidth = colWidth - 2;
         const leftPercent = colIdx * colWidth + (colWidth - cardWidth) / 2;
 
-        return colCards.map((card) => (
+        // Render cards twice for seamless looping
+        const allCards = [...col.cards, ...col.cards];
+
+        return (
           <div
-            key={card.key}
-            className="falling-card"
+            key={colIdx}
+            className="scroll-column"
             style={{
-              "--duration": `${card.duration}s`,
-              "--delay": `${card.delay}s`,
-              "--rotation": `${card.rotation}deg`,
-              "--card-scale": card.scale,
+              position: "absolute",
               left: `${leftPercent}%`,
               width: `${cardWidth}%`,
+              height: "100vh",
               overflow: "hidden",
-            } as React.CSSProperties}
+              // Fade edges so cards appear/disappear smoothly
+              maskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+            }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={card.url}
-              alt={card.title}
-              className="w-full h-auto block"
-              loading="eager"
-              draggable={false}
-            />
+            <div
+              className="scroll-strip"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: `${CARD_GAP_VH}vh`,
+                animation: `scrollDown ${col.duration}s linear infinite`,
+              }}
+            >
+              {allCards.map((card, i) => (
+                <div
+                  key={`${card.key}-${i}`}
+                  style={{
+                    transform: `rotate(${card.rotation}deg)`,
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: `2px solid ${card.color.border}`,
+                    boxShadow: card.color.shadow,
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={card.url}
+                    alt={card.title}
+                    className="w-full h-auto block"
+                    loading="eager"
+                    draggable={false}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        ));
+        );
       })}
     </div>
   );

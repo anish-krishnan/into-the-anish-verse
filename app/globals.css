@@ -152,26 +152,16 @@ input[type="range"]::-moz-range-thumb {
   animation-delay: 0.4s;
 }
 
-/* Gallery screensaver — falling cards */
-@keyframes cardFall {
+/* Gallery screensaver — scrolling card columns */
+@keyframes scrollDown {
   0% {
-    transform: translateY(-110%) rotate(var(--rotation)) scale(var(--card-scale));
-    opacity: 0;
-  }
-  3% {
-    opacity: 1;
-  }
-  97% {
-    opacity: 1;
+    transform: translateY(-50%);
   }
   100% {
-    transform: translateY(calc(100vh + 10%)) rotate(var(--rotation)) scale(var(--card-scale));
-    opacity: 0;
+    transform: translateY(0%);
   }
 }
 
-.falling-card {
-  position: absolute;
-  animation: cardFall var(--duration) linear var(--delay) infinite;
+.scroll-strip {
   will-change: transform;
 }
