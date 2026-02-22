@@ -14,6 +14,7 @@ interface CardWithUrls {
   stat2_level: number;
   compositeImageUrl: string | null;
   rawImageUrl: string | null;
+  favorited: boolean;
   created_at: string;
 }
 

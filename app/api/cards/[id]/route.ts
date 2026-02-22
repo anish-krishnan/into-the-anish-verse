@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCard, deleteCard } from "@/lib/db";
+import { getCard, deleteCard, toggleFavorite } from "@/lib/db";
 import { getPublicUrl, deleteImages } from "@/lib/storage";
 
 export async function GET(
@@ -27,6 +27,35 @@ export async function GET(
     console.error("Error fetching card:", error);
     return NextResponse.json(
       { message: "Failed to fetch card" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const key = request.nextUrl.searchParams.get("key");
+
+  if (key !== process.env.ADMIN_SECRET) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id } = await params;
+    const { favorited } = await request.json();
+
+    if (typeof favorited !== "boolean") {
+      return NextResponse.json({ message: "Invalid body" }, { status: 400 });
+    }
+
+    await toggleFavorite(id, favorited);
+    return NextResponse.json({ message: "Updated", favorited });
+  } catch (error) {
+    console.error("Error updating card:", error);
+    return NextResponse.json(
+      { message: "Failed to update card" },
       { status: 500 }
     );
   }

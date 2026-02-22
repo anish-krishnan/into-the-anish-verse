@@ -13,6 +13,7 @@ interface CardWithUrls {
   stat2_level: number;
   compositeImageUrl: string | null;
   rawImageUrl: string | null;
+  favorited: boolean;
   created_at: string;
 }
 
@@ -58,6 +59,34 @@ export default function AdminGallery({ cards: initialCards, adminKey }: AdminGal
       alert("Failed to delete card.");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleFavorite(cardId: string, currentFavorited: boolean, e: React.MouseEvent) {
+    e.stopPropagation();
+    const newFavorited = !currentFavorited;
+
+    // Optimistic update
+    setCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, favorited: newFavorited } : c))
+    );
+
+    try {
+      const res = await fetch(
+        `/api/cards/${cardId}?key=${encodeURIComponent(adminKey)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ favorited: newFavorited }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to update");
+    } catch (err) {
+      console.error("Favorite toggle failed:", err);
+      // Revert on failure
+      setCards((prev) =>
+        prev.map((c) => (c.id === cardId ? { ...c, favorited: currentFavorited } : c))
+      );
     }
   }
 
@@ -134,6 +163,19 @@ export default function AdminGallery({ cards: initialCards, adminKey }: AdminGal
               className="relative border border-white/10 rounded-lg overflow-hidden bg-navy-light hover:border-neon-cyan/30 transition-all cursor-pointer group"
               onClick={() => setSelectedCard(card)}
             >
+              {/* Favorite button */}
+              <button
+                onClick={(e) => handleFavorite(card.id, card.favorited, e)}
+                className={`absolute top-2 left-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/60 border transition-all cursor-pointer ${
+                  card.favorited
+                    ? "border-neon-gold text-neon-gold"
+                    : "border-white/30 text-white/30 hover:border-neon-gold hover:text-neon-gold"
+                }`}
+                title={card.favorited ? "Unfavorite" : "Favorite"}
+              >
+                {card.favorited ? "\u2605" : "\u2606"}
+              </button>
+
               {/* Delete button */}
               <button
                 onClick={(e) => handleDelete(card.id, e)}

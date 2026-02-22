@@ -8,6 +8,7 @@ export interface Card {
   stat2_level: number;
   raw_image_path: string;
   composite_image_path: string;
+  favorited: boolean;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;

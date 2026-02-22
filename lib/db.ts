@@ -86,6 +86,38 @@ export async function deleteCard(id: string): Promise<Card | null> {
   return data as Card;
 }
 
+export async function getFavoritedCards(): Promise<Card[]> {
+  const supabase = getSupabaseAdmin();
+
+  const { data, error } = await supabase
+    .from("cards")
+    .select("*")
+    .eq("favorited", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to get favorited cards: ${error.message}`);
+  }
+
+  return (data as Card[]) || [];
+}
+
+export async function toggleFavorite(
+  id: string,
+  favorited: boolean
+): Promise<void> {
+  const supabase = getSupabaseAdmin();
+
+  const { error } = await supabase
+    .from("cards")
+    .update({ favorited })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Failed to toggle favorite: ${error.message}`);
+  }
+}
+
 export async function getCardCount(): Promise<number> {
   const supabase = getSupabaseAdmin();
 
