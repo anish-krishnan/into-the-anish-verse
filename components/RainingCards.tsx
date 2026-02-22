@@ -62,8 +62,9 @@ function generateFallingCards(cards: CardWithUrls[]): FallingCardData[] {
   const result: FallingCardData[] = [];
   columnBuckets.forEach((colCards, colIdx) => {
     const limited = colCards;
-    const duration = 20 + Math.random() * 10; // 20-30s, same for all cards in this column
     const n = limited.length;
+    const secondsBetweenCards = 4;
+    const duration = secondsBetweenCards * n + Math.random() * 5; // scale with card count
 
     limited.forEach((card, i) => {
       result.push({
