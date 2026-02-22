@@ -23,7 +23,7 @@ const NEON_COLORS = [
 
 const NUM_COLUMNS = 5;
 const MAX_PER_COLUMN = 2;
-const MIN_CARDS = NUM_COLUMNS * MAX_PER_COLUMN; // 10
+const MIN_CARDS = 100;
 
 interface FallingCardData {
   key: string;
@@ -61,7 +61,7 @@ function generateFallingCards(cards: CardWithUrls[]): FallingCardData[] {
   // Limit to MAX_PER_COLUMN cards per column to guarantee spacing.
   const result: FallingCardData[] = [];
   columnBuckets.forEach((colCards, colIdx) => {
-    const limited = colCards.slice(0, MAX_PER_COLUMN);
+    const limited = colCards;
     const duration = 20 + Math.random() * 10; // 20-30s, same for all cards in this column
     const n = limited.length;
 
