@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
       stat2_level: formData.stat2Level,
       raw_image_path: "",
       composite_image_path: "",
+      favorited: false,
       ip_address: ip,
       user_agent: userAgent,
     });
