@@ -24,7 +24,7 @@ const NEON_COLORS = [
 const NUM_COLUMNS = 5;
 const MIN_CARDS = 100;
 const CARD_GAP_VH = 30; // vertical gap between cards in vh units
-const SECONDS_PER_CARD = 4.5; // how many seconds each card takes to scroll past
+const SECONDS_PER_CARD = 12; // how many seconds each card takes to scroll past
 
 interface ColumnCardData {
   key: string;
